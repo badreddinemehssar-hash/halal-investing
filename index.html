@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Badr Mehssar — Halal ETF Split Calculator</title>
+  <meta name="description" content="Minimal halal ETF whole-share split calculator for Badr Mehssar." />
+  <style>
+    :root{
+      --bg:#f7f7f4;
+      --card:#ffffff;
+      --ink:#121212;
+      --muted:#6b7280;
+      --line:#e7e5df;
+      --gold:#a9822d;
+      --green:#12805c;
+      --red:#b42318;
+      --soft:#f0eee8;
+      --shadow:0 18px 40px rgba(18,18,18,.07);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.45}
+    button,input,select,textarea{font:inherit}
+    .app{max-width:980px;margin:0 auto;padding:18px 16px 60px}
+    header{padding:18px 0 8px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+    .kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700}
+    h1{font-size:clamp(30px,7vw,54px);line-height:.98;margin:8px 0 10px;letter-spacing:-.04em}
+    .subtitle{max-width:640px;color:var(--muted);font-size:15px;margin:0}
+    .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 12px;font-size:13px;color:var(--muted);white-space:nowrap}
+    .grid{display:grid;gap:14px}
+    .summary{grid-template-columns:repeat(4,1fr);margin:24px 0 14px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .etf{padding:18px;display:flex;flex-direction:column;gap:12px;min-height:210px}
+    .etf-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+    .ticker{font-weight:800;font-size:22px;letter-spacing:-.03em}
+    .alloc{font-size:13px;font-weight:800;color:var(--gold);background:#fbf7ea;border:1px solid #efe1b9;border-radius:999px;padding:5px 9px;white-space:nowrap}
+    .name{font-weight:650;line-height:1.25}
+    .meta{font-size:13px;color:var(--muted);display:grid;gap:5px;margin-top:auto}
+    .minirow{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:10px;gap:12px}
+    .minirow span:last-child{font-weight:700;color:var(--ink);text-align:right}
+    .section{margin-top:18px;padding:22px}
+    .section h2{margin:0 0 6px;font-size:24px;letter-spacing:-.03em}
+    .section p{margin:0;color:var(--muted);font-size:14px}
+    .calculator{display:grid;grid-template-columns:1fr 1.35fr;gap:16px;margin-top:16px}
+    label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800;margin-bottom:7px}
+    input,textarea{width:100%;border:1px solid var(--line);border-radius:15px;background:#fff;padding:13px 14px;color:var(--ink);outline:none}
+    input:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(169,130,45,.12)}
+    .inputgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .bigNumber{font-size:42px;line-height:1;font-weight:850;letter-spacing:-.06em;margin:8px 0;color:var(--ink)}
+    .hint{font-size:12px;color:var(--muted)}
+    .tablewrap{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:18px;background:#fff}
+    table{border-collapse:collapse;width:100%;font-size:14px;min-width:760px}
+    th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+    th:first-child,td:first-child{text-align:left}
+    th{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:#fafaf8}
+    tr:last-child td{border-bottom:none}
+    td strong{font-size:15px}
+    .ok{color:var(--green);font-weight:800}
+    .no{color:var(--red);font-weight:800}
+    .totals{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+    .stat{background:var(--soft);border:1px solid var(--line);border-radius:18px;padding:14px}
+    .stat .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
+    .stat .value{font-size:22px;font-weight:850;letter-spacing:-.04em;margin-top:4px}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    .btn{border:none;border-radius:14px;padding:12px 14px;font-weight:800;cursor:pointer;background:var(--ink);color:white}
+    .btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}
+    .btn.danger{background:#fff;color:var(--red);border:1px solid #f1c7c2}
+    .notes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+    .smallcard{padding:18px}
+    .smallcard h3{margin:0 0 8px;font-size:18px;letter-spacing:-.02em}
+    .smallcard ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px}
+    .smallcard li{margin:7px 0}
+    .log{margin-top:14px;display:grid;gap:10px}
+    .logitem{border:1px solid var(--line);background:#fff;border-radius:16px;padding:12px;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px}
+    .logitem strong{color:var(--ink)}
+    footer{padding:28px 0;color:var(--muted);font-size:12px;text-align:center}
+    .hidden{display:none!important}
+    @media(max-width:820px){.summary{grid-template-columns:1fr 1fr}.calculator{grid-template-columns:1fr}.totals{grid-template-columns:1fr 1fr}.notes{grid-template-columns:1fr}}
+    @media(max-width:520px){.app{padding:14px 12px 44px}header{display:block}.pill{margin-top:12px}.summary{grid-template-columns:1fr}.section{padding:18px}.inputgrid{grid-template-columns:1fr}.totals{grid-template-columns:1fr 1fr}.bigNumber{font-size:36px}}
+    @media(prefers-color-scheme:dark){
+      :root{--bg:#0f1115;--card:#171a21;--ink:#f4f4f2;--muted:#9aa3af;--line:#2a2f3a;--soft:#1f2430;--shadow:0 18px 40px rgba(0,0,0,.22)}
+      input,textarea,.tablewrap,.btn.secondary,.btn.danger,.logitem{background:#171a21;color:var(--ink)}
+      th{background:#1d222b}.alloc{background:#2a2414;border-color:#51421b}.pill{background:#171a21}
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <div class="kicker">Badr Mehssar · Halal ETF plan</div>
+        <h1>Monthly split calculator</h1>
+        <p class="subtitle">Enter your monthly amount and the current DEGIRO prices. The calculator splits the money by your target allocation and shows how many full shares you can buy.</p>
+      </div>
+      <div class="pill">Saved locally on this device</div>
+    </header>
+
+    <section class="grid summary" id="etfCards"></section>
+
+    <section class="card section">
+      <h2>Buy planner</h2>
+      <p>Default split: 50% / 20% / 15% / 15%. DEGIRO uses whole shares, so some target money may stay as leftover cash for next month.</p>
+
+      <div class="calculator">
+        <div class="card smallcard">
+          <label for="monthlyAmount">Monthly amount</label>
+          <input id="monthlyAmount" type="number" min="0" step="1" value="200" inputmode="decimal" />
+          <div class="bigNumber" id="amountDisplay">€200</div>
+          <div class="hint">This is the amount you want to invest this month.</div>
+
+          <div class="inputgrid" style="margin-top:16px">
+            <div>
+              <label for="carryCash">Existing leftover cash</label>
+              <input id="carryCash" type="number" min="0" step="0.01" value="0" inputmode="decimal" />
+            </div>
+            <div>
+              <label for="feeMode">Fee mode</label>
+              <select id="feeMode" style="width:100%;border:1px solid var(--line);border-radius:15px;background:var(--card);color:var(--ink);padding:13px 14px">
+                <option value="include">Include fees in budget</option>
+                <option value="ignore">Ignore fees for share count</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card smallcard">
+          <h3>Current prices and order costs</h3>
+          <div class="inputgrid" id="priceInputs"></div>
+        </div>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ETF</th>
+              <th>Target</th>
+              <th>Cash slice</th>
+              <th>Price</th>
+              <th>Shares</th>
+              <th>Order cost</th>
+              <th>Leftover</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="resultRows"></tbody>
+        </table>
+      </div>
+
+      <div class="totals">
+        <div class="stat"><div class="label">Total available</div><div class="value" id="totalAvailable">€0</div></div>
+        <div class="stat"><div class="label">Invested now</div><div class="value" id="totalInvested">€0</div></div>
+        <div class="stat"><div class="label">Total fees</div><div class="value" id="totalFees">€0</div></div>
+        <div class="stat"><div class="label">Leftover</div><div class="value" id="totalLeftover">€0</div></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="savePlan">Save this month</button>
+        <button class="btn secondary" id="exportData">Export backup</button>
+        <label class="btn secondary" for="importFile" style="display:inline-block">Import backup</label>
+        <input id="importFile" type="file" accept="application/json" class="hidden" />
+        <button class="btn danger" id="resetData">Reset</button>
+      </div>
+    </section>
+
+    <section class="notes">
+      <div class="card smallcard">
+        <h3>Clean 4-ETF list</h3>
+        <ul>
+          <li><strong>IUSD</strong> is the core global developed Islamic ETF.</li>
+          <li><strong>IGDA</strong> adds a second Islamic methodology.</li>
+          <li><strong>H41P</strong> adds USA Islamic Screened exposure.</li>
+          <li><strong>HIES</strong> adds emerging markets Islamic Screened exposure.</li>
+        </ul>
+      </div>
+      <div class="card smallcard">
+        <h3>Simple rule</h3>
+        <ul>
+          <li>Update prices from DEGIRO before buying.</li>
+          <li>Check the final order preview before confirming.</li>
+          <li>Keep leftover cash for next month instead of forcing the split.</li>
+          <li>Review Shariah status and fund documents yearly.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h2>Saved plans</h2>
+      <p>Your saved monthly calculations stay in localStorage on this device.</p>
+      <div class="log" id="planLog"></div>
+    </section>
+
+    <footer>
+      Educational planning tool only. Not financial advice. Built for Badr Mehssar.
+    </footer>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'badr_halal_split_clean_v1';
+
+    const etfs = [
+      {
+        id:'iusd', ticker:'IUSD', exchange:'TDG', name:'iShares MSCI World Islamic UCITS ETF USD (Dist)', isin:'IE00B27YCN58', allocation:50, price:57.44, fee:1, ter:'0.30%', durability:'Very high', risk:'Medium-high', returnBand:'6–9% p.a.'
+      },
+      {
+        id:'igda', ticker:'IGDA', exchange:'TDG', name:'Invesco Dow Jones Islamic Global Developed Markets UCITS ETF Acc', isin:'IE000UOXRAM8', allocation:20, price:33.725, fee:1, ter:'0.40%', durability:'Good', risk:'Medium-high', returnBand:'6–9% p.a.'
+      },
+      {
+        id:'h41p', ticker:'H41P', exchange:'TDG', name:'HSBC MSCI USA Islamic Screened UCITS ETF USD Acc', isin:'IE000I5NV504', allocation:15, price:38.94, fee:1, ter:'0.30%', durability:'Newer', risk:'High', returnBand:'7–10% p.a.'
+      },
+      {
+        id:'hies', ticker:'HIES', exchange:'EPA', name:'HSBC MSCI EM Islamic Screened Capped UCITS ETF USD Acc', isin:'IE0009BC6K22', allocation:15, price:26.395, fee:3, ter:'0.35%', durability:'Newer', risk:'Very high', returnBand:'6–11% p.a.'
+      }
+    ];
+
+    let state = {
+      monthlyAmount: 200,
+      carryCash: 0,
+      feeMode: 'include',
+      prices: Object.fromEntries(etfs.map(e => [e.id, e.price])),
+      fees: Object.fromEntries(etfs.map(e => [e.id, e.fee])),
+      logs: []
+    };
+
+    const € = n => '€' + Number(n || 0).toLocaleString('de-DE', {minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2});
+    const num = v => Number(String(v).replace(',', '.')) || 0;
+
+    function load(){
+      try{
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if(saved) state = {...state, ...saved, prices:{...state.prices, ...(saved.prices||{})}, fees:{...state.fees, ...(saved.fees||{})}};
+      }catch(e){}
+    }
+    function persist(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    function renderCards(){
+      const root = document.getElementById('etfCards');
+      root.innerHTML = etfs.map(e => `
+        <article class="card etf">
+          <div class="etf-top"><div class="ticker">${e.ticker}</div><div class="alloc">${e.allocation}%</div></div>
+          <div class="name">${e.name}</div>
+          <div class="meta">
+            <div class="minirow"><span>Exchange</span><span>${e.exchange}</span></div>
+            <div class="minirow"><span>TER/OCF</span><span>${e.ter}</span></div>
+            <div class="minirow"><span>Durability</span><span>${e.durability}</span></div>
+            <div class="minirow"><span>Risk</span><span>${e.risk}</span></div>
+            <div class="minirow"><span>Planning return</span><span>${e.returnBand}</span></div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function renderInputs(){
+      document.getElementById('monthlyAmount').value = state.monthlyAmount;
+      document.getElementById('carryCash').value = state.carryCash;
+      document.getElementById('feeMode').value = state.feeMode;
+      document.getElementById('priceInputs').innerHTML = etfs.map(e => `
+        <div>
+          <label>${e.ticker} price</label>
+          <input data-price="${e.id}" type="number" min="0" step="0.001" value="${state.prices[e.id]}" inputmode="decimal" />
+        </div>
+        <div>
+          <label>${e.ticker} fee/order</label>
+          <input data-fee="${e.id}" type="number" min="0" step="0.01" value="${state.fees[e.id]}" inputmode="decimal" />
+        </div>
+      `).join('');
+    }
+
+    function calculate(){
+      const monthly = num(document.getElementById('monthlyAmount').value);
+      const carry = num(document.getElementById('carryCash').value);
+      const feeMode = document.getElementById('feeMode').value;
+      state.monthlyAmount = monthly;
+      state.carryCash = carry;
+      state.feeMode = feeMode;
+
+      document.querySelectorAll('[data-price]').forEach(i => state.prices[i.dataset.price] = num(i.value));
+      document.querySelectorAll('[data-fee]').forEach(i => state.fees[i.dataset.fee] = num(i.value));
+      document.getElementById('amountDisplay').textContent = €(monthly);
+
+      const rows = [];
+      let totalInvested = 0, totalFees = 0, totalLeftover = 0;
+
+      for(const e of etfs){
+        const baseSlice = monthly * e.allocation / 100;
+        const carrySlice = carry * e.allocation / 100;
+        const cash = baseSlice + carrySlice;
+        const price = state.prices[e.id];
+        const fee = state.fees[e.id];
+        let shares = 0;
+        if(price > 0){
+          shares = feeMode === 'include'
+            ? Math.max(0, Math.floor((cash - fee) / price))
+            : Math.max(0, Math.floor(cash / price));
+        }
+        const usedFee = shares > 0 ? fee : 0;
+        const orderCost = shares * price + usedFee;
+        const leftover = Math.max(0, cash - orderCost);
+        totalInvested += shares * price;
+        totalFees += usedFee;
+        totalLeftover += leftover;
+
+        rows.push({e, baseSlice, carrySlice, cash, price, fee, shares, orderCost, leftover});
+      }
+
+      document.getElementById('resultRows').innerHTML = rows.map(r => `
+        <tr>
+          <td><strong>${r.e.ticker}</strong><br><span style="color:var(--muted);font-size:12px">${r.e.exchange} · ${r.e.isin}</span></td>
+          <td>${r.e.allocation}%</td>
+          <td>${€(r.cash)}</td>
+          <td>${€(r.price)}</td>
+          <td><strong>${r.shares}</strong></td>
+          <td>${€(r.orderCost)}</td>
+          <td>${€(r.leftover)}</td>
+          <td>${r.shares > 0 ? '<span class="ok">Buy</span>' : '<span class="no">Wait</span>'}</td>
+        </tr>
+      `).join('');
+
+      document.getElementById('totalAvailable').textContent = €(monthly + carry);
+      document.getElementById('totalInvested').textContent = €(totalInvested);
+      document.getElementById('totalFees').textContent = €(totalFees);
+      document.getElementById('totalLeftover').textContent = €(totalLeftover);
+
+      persist();
+      return {monthly, carry, rows, totalInvested, totalFees, totalLeftover};
+    }
+
+    function renderLogs(){
+      const log = document.getElementById('planLog');
+      if(!state.logs.length){ log.innerHTML = '<div class="hint">No saved plans yet.</div>'; return; }
+      log.innerHTML = state.logs.slice().reverse().map(x => `
+        <div class="logitem">
+          <div><strong>${x.date}</strong><br>${x.orders}</div>
+          <div><strong>${€(x.invested)}</strong><br>leftover ${€(x.leftover)}</div>
+        </div>
+      `).join('');
+    }
+
+    function bind(){
+      document.addEventListener('input', e => {
+        if(e.target.matches('input,select')) calculate();
+      });
+      document.getElementById('feeMode').addEventListener('change', calculate);
+
+      document.getElementById('savePlan').addEventListener('click', () => {
+        const result = calculate();
+        const orders = result.rows.map(r => `${r.e.ticker}: ${r.shares}`).join(' · ');
+        state.logs.push({date:new Date().toLocaleDateString('en-GB'), orders, invested:result.totalInvested, fees:result.totalFees, leftover:result.totalLeftover});
+        if(state.logs.length > 24) state.logs = state.logs.slice(-24);
+        persist(); renderLogs();
+      });
+
+      document.getElementById('exportData').addEventListener('click', () => {
+        calculate();
+        const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'badr-halal-etf-backup.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+
+      document.getElementById('importFile').addEventListener('change', async e => {
+        const file = e.target.files[0]; if(!file) return;
+        try{
+          const data = JSON.parse(await file.text());
+          state = {...state, ...data, prices:{...state.prices, ...(data.prices||{})}, fees:{...state.fees, ...(data.fees||{})}};
+          persist(); renderInputs(); calculate(); renderLogs();
+        }catch(err){ alert('Could not import this file.'); }
+      });
+
+      document.getElementById('resetData').addEventListener('click', () => {
+        if(confirm('Reset saved calculator data on this device?')){
+          localStorage.removeItem(STORAGE_KEY);
+          location.reload();
+        }
+      });
+    }
+
+    load();
+    renderCards();
+    renderInputs();
+    bind();
+    calculate();
+    renderLogs();
+  </script>
+</body>
+</html>
